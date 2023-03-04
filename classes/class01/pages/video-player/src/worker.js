@@ -13,15 +13,17 @@ tf.setBackend('webgl')
 const service = new Service({
   faceLandmarksDetection
 })
+try {
+  console.log('loading tf model')
+  await service.loadModel()
+  console.log('tf model loaded!')
+  postMessage('READY')
+} catch (error) {
+  console.log('error loading model')
+}
 
-console.log('loading tf model')
-await service.loadModel()
-console.log('tf model loaded!')
-postMessage('READY')
-
-onmessage = ({ data }) => {
-  console.log('worker!', data)
-  postMessage({
-    'ok': 'ok'
-  })
+onmessage = async ({ data: video }) => {
+  const blinked = await service.handBlinked(video)
+  if(!blinked) return;
+  postMessage({ blinked })
 }
